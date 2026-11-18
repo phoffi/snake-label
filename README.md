@@ -1,5 +1,5 @@
 # [![`snake_label`](/img/snake_label_header.webp)](https://snake-label.de)
-Converts large format shipping labels to 62mm `snake_labels` for label printers e. g. Brother QL printers. - And this without sending your labels to a server, instead your browser will do all the work!
+Converts large format shipping labels to 62mm `snake_labels` for label printers e. g. Brother QL printers. Conversion happens locally in your browser; direct printing is optional.
 
 > **Note**
 > Feel free to use the hosted online version: **[[ snake-label.de ]](https://snake-label.de)**
@@ -15,6 +15,7 @@ Converts large format shipping labels to 62mm `snake_labels` for label printers 
 - **as short as possible**: more labels for your money!
 - **sharp 2D-/barcodes**: for best scanability
 - **without backend**: crops completely locally via JS (keep your address safe!)
+- **direct printing (optional)**: send the finished label to a configured [brother_ql_web](https://github.com/socram70/brother_ql_web) service
 - optimized for 300dpi
 - optimised PNGs for direct printing via [brother_ql](https://github.com/pklaus/brother_ql)
 
@@ -28,6 +29,10 @@ Use **Neues Etikett gestalten** to create a template from an uploaded PDF or ima
 4. Set the total label length (including the existing 3mm end margins) and save. The template is stored locally in the current browser and appears in the label list for future uploads.
 
 Use **Vorlagen exportieren** to download your templates as JSON, or **Vorlagen importieren** to load that file in another browser/device. The uploaded documents and template data are processed locally; the JSON contains crop coordinates and layout settings, not the source document.
+
+### Direct printing
+
+Direct printing requires a running [brother_ql_web](https://github.com/socram70/brother_ql_web) service. Configure its URL under **Drucker einrichten** (default: `http://localhost:8013`) and enable CORS on the service if needed. The finished label is sent to that URL only when **Direkt drucken** is clicked; otherwise conversion and downloads remain in the browser.
 
 
 Currently available labels

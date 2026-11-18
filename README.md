@@ -18,6 +18,17 @@ Converts large format shipping labels to 62mm `snake_labels` for label printers 
 - optimized for 300dpi
 - optimised PNGs for direct printing via [brother_ql](https://github.com/pklaus/brother_ql)
 
+### Custom label templates
+
+Use **Neues Etikett gestalten** to create a template from an uploaded PDF or image:
+
+1. Select a representative shipping label file and choose **Neues Etikett gestalten**.
+2. Drag over an area in the source document and add it to the label. Repeat for each part you need.
+3. Drag parts on the 62mm print area; select a part to zoom, rotate it, or remove it. Set the label length in millimetres.
+4. Set the total label length (including the existing 3mm end margins) and save. The template is stored locally in the current browser and appears in the label list for future uploads.
+
+Use **Vorlagen exportieren** to download your templates as JSON, or **Vorlagen importieren** to load that file in another browser/device. The uploaded documents and template data are processed locally; the JSON contains crop coordinates and layout settings, not the source document.
+
 
 Currently available labels
 ---------------------------

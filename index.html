@@ -153,9 +153,21 @@
                                     </optgroup>
                                 </select>
                             </div>
-
-                            <!-- Label Options - In the future... -->
-                            <!-- Label Details - In the future... -->
+                            <div class="flex flex-wrap justify-end gap-2">
+                                <button id="create-custom-label" type="button"
+                                    class="border border-green-600 px-3 py-1 text-sm hover:bg-green-100">
+                                    Neues Etikett gestalten
+                                </button>
+                                <button id="export-custom-labels" type="button"
+                                    class="border border-gray-500 px-3 py-1 text-sm hover:bg-gray-100">
+                                    Vorlagen exportieren
+                                </button>
+                                <button id="import-custom-labels" type="button"
+                                    class="border border-gray-500 px-3 py-1 text-sm hover:bg-gray-100">
+                                    Vorlagen importieren
+                                </button>
+                                <input id="custom-label-file" type="file" accept="application/json,.json" hidden />
+                            </div>
                         </div>
 
                         <!-- File Input -->
@@ -172,14 +184,15 @@
                                         <div class="text-gray-900">
                                             <label for="file-input" class="cursor-pointer hover:text-green-500">
                                                 <!-- Select file -->
-                                                <input id="file-input" type="file" accept="application/pdf,image/gif"
+                                                <input id="file-input" type="file" accept="application/pdf,image/*"
                                                     class="w-full file:px-2 file:bg-green-400 file:text-gray-900 file:border-0 file:font-sans focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2" />
                                             </label>
                                             <!-- <div class="pl-1">or drag and drop</div> -->
                                         </div>
-                                        <p class="mt-2 text-xs text-gray-900">PDF, GIF</p>
+                                        <p class="mt-2 text-xs text-gray-900">PDF oder Bilddatei</p>
                                     </div>
                                 </div>
+                                <p id="app-status" class="mx-auto max-w-7xl px-4 pb-4 text-red-700" role="alert" aria-live="polite"></p>
                             </div>
 
                             <!-- Crop Button -->
@@ -290,6 +303,57 @@
             </details>
         </footer>
     </div>
-</body>
+    <dialog id="label-editor" class="label-editor-dialog">
+        <div class="space-y-4 p-4 sm:p-6">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-bold">Etikett gestalten</h2>
+                    <p class="text-sm text-gray-600">Ziehe im Quelldokument einen Ausschnitt auf. Auf der Etikettenfläche kannst du ihn verschieben, an den Ecken proportional skalieren und am oberen Griff in 90°-Schritten drehen.</p>
+                </div>
+                <button id="editor-close" type="button" class="border px-3 py-1">Schließen</button>
+            </div>
 
+            <div class="flex flex-wrap items-end gap-4">
+                <label class="block text-sm font-medium">
+                    Vorlagenname
+                    <input id="editor-name" type="text" maxlength="80" required
+                        class="mt-1 block w-64 border-gray-400" />
+                </label>
+                <label class="block text-sm font-medium">
+                    Gesamtlänge des Etiketts (mm)
+                    <input id="editor-length" type="number" min="25" max="300" step="1" value="145"
+                        class="mt-1 block w-32 border-gray-400" />
+                </label>
+            </div>
+
+            <div class="grid gap-6 lg:grid-cols-2">
+                <section class="space-y-2">
+                    <h3 class="font-semibold">1. Ausschnitt auswählen</h3>
+                    <canvas id="editor-source" class="editor-canvas"></canvas>
+                    <button id="editor-add-crop" type="button" disabled
+                        class="bg-green-400 px-3 py-2 text-sm font-semibold disabled:opacity-50">
+                        Auswahl zur Etikettenfläche hinzufügen
+                    </button>
+                </section>
+                <section class="space-y-2">
+                    <h3 class="font-semibold">2. Bedruckbare Fläche anordnen</h3>
+                    <p class="text-xs text-gray-600">Die Vorschau zeigt 59 mm Druckbreite; die PDF ergänzt die Sicherheitsränder für 62-mm-Etiketten.</p>
+                    <canvas id="editor-target" class="editor-canvas editor-target-canvas"
+                        aria-label="Etikettenfläche. Ausschnitte durch Ziehen verschieben, an den Eckgriffen skalieren und am oberen Griff in 90-Grad-Schritten drehen."></canvas>
+                    <div class="flex flex-wrap gap-2">
+                        <button id="editor-zoom-out" type="button" disabled class="border px-3 py-1 disabled:opacity-50">− Zoom</button>
+                        <button id="editor-zoom-in" type="button" disabled class="border px-3 py-1 disabled:opacity-50">+ Zoom</button>
+                        <button id="editor-rotate" type="button" disabled class="border px-3 py-1 disabled:opacity-50">90° drehen</button>
+                        <button id="editor-remove-crop" type="button" disabled class="border border-red-500 px-3 py-1 disabled:opacity-50">Ausschnitt entfernen</button>
+                    </div>
+                    <div id="editor-crop-list" class="flex flex-wrap gap-2" aria-label="Ausschnitte"></div>
+                </section>
+            </div>
+            <p id="editor-status" class="text-sm text-red-700" role="alert" aria-live="polite"></p>
+            <div class="flex justify-end">
+                <button id="editor-save" type="button" class="bg-green-400 px-4 py-2 font-bold">Vorlage speichern</button>
+            </div>
+        </div>
+    </dialog>
+</body>
 </html>

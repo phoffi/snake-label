@@ -34,6 +34,22 @@ Use **Vorlagen exportieren** to download your templates as JSON, or **Vorlagen i
 
 Direct printing requires a running [brother_ql_web](https://github.com/socram70/brother_ql_web) service. Configure its URL under **Drucker einrichten** (default: `http://localhost:8013`) and enable CORS on the service if needed. The finished label is sent to that URL only when **Direkt drucken** is clicked; otherwise conversion and downloads remain in the browser.
 
+## Run with Docker
+
+Build and start the web app with Docker Compose:
+
+```bash
+docker compose up --build -d
+```
+
+Open [http://localhost:8080](http://localhost:8080). Stop the container with:
+
+```bash
+docker compose down
+```
+
+This container serves the web app only; direct printing still requires a separate `brother_ql_web` service reachable from the browser.
+
 
 Currently available labels
 ---------------------------

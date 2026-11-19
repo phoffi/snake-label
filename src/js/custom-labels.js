@@ -13,8 +13,14 @@ export function loadCustomTemplates() {
 }
 
 export function saveCustomTemplates(templates) {
-    if (!Array.isArray(templates) || !templates.every(isValidTemplate)) {
-        throw new Error('Die Etikettenvorlage ist ungültig und konnte nicht gespeichert werden.');
+    const invalidIndex = Array.isArray(templates)
+        ? templates.findIndex(template => getTemplateValidationError(template))
+        : -1;
+    if (!Array.isArray(templates) || invalidIndex >= 0) {
+        const detail = invalidIndex >= 0
+            ? `Vorlage ${invalidIndex + 1}: ${getTemplateValidationError(templates[invalidIndex])}`
+            : 'Die Vorlagenliste ist kein Array.';
+        throw new Error(`Die Etikettenvorlage ist ungültig und konnte nicht gespeichert werden. ${detail} Überschneidungen von Ausschnitten sind erlaubt.`);
     }
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, templates }));
@@ -28,35 +34,53 @@ export function parseTemplates(json) {
         throw new Error('Die JSON-Datei ist ungültig oder beschädigt.');
     }
 
-    if (data?.version !== 1 || !Array.isArray(data.templates) ||
-        !data.templates.every(isValidTemplate)) {
+    if (data?.version !== 1 || !Array.isArray(data.templates)) {
         throw new Error('Die Datei enthält keine gültigen snake_label-Vorlagen (Version 1).');
+    }
+    const invalidIndex = data.templates.findIndex(template => getTemplateValidationError(template));
+    if (invalidIndex >= 0) {
+        throw new Error(`Vorlage ${invalidIndex + 1} in der Datei: ${getTemplateValidationError(data.templates[invalidIndex])} Überschneidungen von Ausschnitten sind erlaubt.`);
     }
 
     return data.templates;
 }
 
 export function isValidTemplate(template) {
-    return Boolean(
-        template &&
-        typeof template.id === 'string' && template.id.length > 0 &&
-        typeof template.name === 'string' && template.name.trim().length > 0 &&
-        Number.isFinite(template.lengthMm) && template.lengthMm >= 25 && template.lengthMm <= 300 &&
-        Array.isArray(template.crops) && template.crops.length > 0 && template.crops.length <= 100 &&
-        template.crops.every(isValidCrop)
-    );
+    return getTemplateValidationError(template) === null;
 }
 
-function isValidCrop(crop) {
-    if (!crop || !crop.source || !crop.destination) return false;
+function getTemplateValidationError(template) {
+    if (!template || typeof template !== 'object') return 'Vorlage fehlt oder ist kein Objekt.';
+    if (typeof template.id !== 'string' || template.id.length === 0) return 'Die Vorlagen-ID fehlt.';
+    if (typeof template.name !== 'string' || template.name.trim().length === 0) return 'Der Vorlagenname fehlt.';
+    if (!Number.isFinite(template.lengthMm) || template.lengthMm < 25 || template.lengthMm > 300) {
+        return 'Die Etikettenlänge muss zwischen 25 und 300 mm liegen.';
+    }
+    if (!Array.isArray(template.crops)) return 'Die Ausschnittliste ist ungültig.';
+    if (template.crops.length === 0 || template.crops.length > 100) {
+        return 'Die Vorlage muss zwischen 1 und 100 Ausschnitte enthalten.';
+    }
+
+    for (let index = 0; index < template.crops.length; index += 1) {
+        const error = getCropValidationError(template.crops[index]);
+        if (error) return `Ausschnitt ${index + 1}: ${error}`;
+    }
+    return null;
+}
+
+function getCropValidationError(crop) {
+    if (!crop || !crop.source || !crop.destination) return 'Quelle oder Zielposition fehlt.';
     const { x, y, width, height } = crop.source;
     const destination = crop.destination;
 
-    return [x, y, width, height].every(Number.isFinite) &&
-        x >= 0 && y >= 0 && width > 0 && height > 0 &&
-        x + width <= 1.000001 && y + height <= 1.000001 &&
-        ['x', 'y', 'width', 'height', 'rotation'].every(key => Number.isFinite(destination[key])) &&
-        destination.x >= 0 && destination.y >= 0 &&
-        destination.width > 0 && destination.height > 0 &&
-        Math.abs(destination.rotation) <= 36000;
+    if (![x, y, width, height].every(Number.isFinite)) return 'Die Quellfläche enthält ungültige Zahlenwerte.';
+    if (x < 0 || y < 0 || width <= 0 || height <= 0) return 'Die Quellfläche hat eine ungültige Position oder Größe.';
+    if (x + width > 1.000001 || y + height > 1.000001) return 'Die Quellfläche liegt teilweise außerhalb der Quelldatei.';
+    if (!['x', 'y', 'width', 'height', 'rotation'].every(key => Number.isFinite(destination[key]))) {
+        return 'Die Zielposition enthält ungültige Zahlenwerte.';
+    }
+    if (destination.x < 0 || destination.y < 0) return 'Die Zielposition liegt außerhalb der Etikettenfläche.';
+    if (destination.width <= 0 || destination.height <= 0) return 'Die Zielgröße muss größer als 0 sein.';
+    if (Math.abs(destination.rotation) > 36000) return 'Der Drehwinkel ist ungültig.';
+    return null;
 }

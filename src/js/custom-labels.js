@@ -62,13 +62,13 @@ function getTemplateValidationError(template) {
     }
 
     for (let index = 0; index < template.crops.length; index += 1) {
-        const error = getCropValidationError(template.crops[index]);
+        const error = getCropValidationError(template.crops[index], template.lengthMm);
         if (error) return `Ausschnitt ${index + 1}: ${error}`;
     }
     return null;
 }
 
-function getCropValidationError(crop) {
+function getCropValidationError(crop, lengthMm) {
     if (!crop || !crop.source || !crop.destination) return 'Quelle oder Zielposition fehlt.';
     const { x, y, width, height } = crop.source;
     const destination = crop.destination;
@@ -79,8 +79,22 @@ function getCropValidationError(crop) {
     if (!['x', 'y', 'width', 'height', 'rotation'].every(key => Number.isFinite(destination[key]))) {
         return 'Die Zielposition enthält ungültige Zahlenwerte.';
     }
-    if (destination.x < 0 || destination.y < 0) return 'Die Zielposition liegt außerhalb der Etikettenfläche.';
     if (destination.width <= 0 || destination.height <= 0) return 'Die Zielgröße muss größer als 0 sein.';
     if (Math.abs(destination.rotation) > 36000) return 'Der Drehwinkel ist ungültig.';
+
+    const targetWidth = (lengthMm - 6) * 300 / 25.4;
+    const targetHeight = 696;
+    const angle = destination.rotation * Math.PI / 180;
+    const halfWidth = (Math.abs(Math.cos(angle)) * destination.width +
+        Math.abs(Math.sin(angle)) * destination.height) / 2;
+    const halfHeight = (Math.abs(Math.sin(angle)) * destination.width +
+        Math.abs(Math.cos(angle)) * destination.height) / 2;
+    const centerX = destination.x + destination.width / 2;
+    const centerY = destination.y + destination.height / 2;
+
+    if (centerX - halfWidth < -0.001 || centerX + halfWidth > targetWidth + 0.001 ||
+        centerY - halfHeight < -0.001 || centerY + halfHeight > targetHeight + 0.001) {
+        return 'Die Zielposition liegt außerhalb der Etikettenfläche.';
+    }
     return null;
 }

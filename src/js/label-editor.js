@@ -395,16 +395,12 @@ function keepCropInBounds(destination) {
         Math.abs(Math.sin(rotation)) * destination.height) / 2;
     const halfHeight = (Math.abs(Math.sin(rotation)) * destination.width +
         Math.abs(Math.cos(rotation)) * destination.height) / 2;
-    const centerX = clamp(
-        destination.x + destination.width / 2,
-        Math.min(halfWidth, targetCanvas.width / 2),
-        Math.max(targetCanvas.width - halfWidth, targetCanvas.width / 2)
-    );
-    const centerY = clamp(
-        destination.y + destination.height / 2,
-        Math.min(halfHeight, targetCanvas.height / 2),
-        Math.max(targetCanvas.height - halfHeight, targetCanvas.height / 2)
-    );
+    const centerX = halfWidth > targetCanvas.width / 2
+        ? targetCanvas.width / 2
+        : clamp(destination.x + destination.width / 2, halfWidth, targetCanvas.width - halfWidth);
+    const centerY = halfHeight > targetCanvas.height / 2
+        ? targetCanvas.height / 2
+        : clamp(destination.y + destination.height / 2, halfHeight, targetCanvas.height - halfHeight);
     destination.x = centerX - destination.width / 2;
     destination.y = centerY - destination.height / 2;
 }

@@ -2,7 +2,7 @@ services:
   snake-label:
     build: .
     ports:
-      - "8080:80"
+      - "8014:80"
     restart: unless-stopped
 
   brother-ql-web:

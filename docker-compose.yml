@@ -4,3 +4,14 @@ services:
     ports:
       - "8080:80"
     restart: unless-stopped
+
+  brother-ql-web:
+    image: ghcr.io/socram70/brother_ql_web:latest
+    ports:
+      - "8013:8013"
+    volumes:
+      - ./brother_ql_web_instance/application.py.example:/app/instance/application.py:ro
+    restart: unless-stopped
+    # For USB printers, uncomment and adjust the device path:
+    # devices:
+    #   - /dev/usb/lp0:/dev/usb/lp0
